@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d1118">
+<title>Match Detector</title>
+<style>
+:root{
+  --bg:#090c12; --panel:#111722; --panel2:#171e2b; --line:#273142;
+  --text:#f4f7fb; --muted:#9da8b8; --accent:#ff3d67; --accent2:#ff7847;
+  --good:#35d39b; --warn:#ffc857; --bad:#ff5d6c; --blue:#5aa9ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 20% 0%,#22101a 0,#090c12 42%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:18px 16px 12px;position:sticky;top:0;z-index:5;background:rgba(9,12,18,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{font-weight:800;letter-spacing:.08em;font-size:20px}.brand span{color:var(--accent)}
+.sub{color:var(--muted);font-size:12px;margin-top:3px}
+.wrap{max-width:760px;margin:auto;padding:14px}
+.card{background:linear-gradient(180deg,rgba(23,30,43,.98),rgba(14,19,28,.98));border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:13px;box-shadow:0 12px 30px rgba(0,0,0,.22)}
+h2{font-size:15px;margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+select,input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#0b1018;color:var(--text);font-size:15px;outline:none}
+button{border:0;border-radius:12px;padding:13px 15px;font-weight:800;color:#fff;background:linear-gradient(90deg,var(--accent),var(--accent2));cursor:pointer}
+button.secondary{background:#202938;border:1px solid #334055}.buttons{display:flex;gap:9px;margin-top:12px}.buttons button{flex:1}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px currentColor}.dot.on{background:var(--good)}
+.hero{text-align:center;padding:18px}.bigdigit{font-size:70px;font-weight:900;line-height:1;margin:5px 0 10px}.candidate{font-size:13px;color:var(--muted)}
+.signal{border:1px solid #3b4555;border-radius:16px;padding:14px;margin-top:12px}.signal.good{border-color:rgba(53,211,155,.55);box-shadow:0 0 25px rgba(53,211,155,.08)}
+.signaltitle{font-size:18px;font-weight:900}.signalmeta{color:var(--muted);font-size:12px;margin-top:5px}
+.ticks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.tick{width:34px;height:34px;border-radius:9px;background:#202938;display:grid;place-items:center;font-weight:800}.tick.latest{background:var(--accent);color:white}.tick.match{outline:2px solid var(--good)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.metric{background:#0c121b;border:1px solid var(--line);border-radius:12px;padding:10px}.metric b{display:block;font-size:18px}.metric span{font-size:10px;color:var(--muted)}
+.bars{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;align-items:end;height:130px;margin-top:10px}.barwrap{height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:4px}.bar{width:100%;max-width:35px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--accent),#70203a);min-height:2px}.barwrap span{font-size:10px;color:var(--muted)}
+.log{max-height:190px;overflow:auto;font-family:ui-monospace,monospace;font-size:11px;color:#bac4d3;white-space:pre-wrap}
+.small{font-size:11px;color:var(--muted);line-height:1.45}
+.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#202938;color:#b9c4d5;font-size:11px}
+footer{padding:5px 2px 25px;text-align:center;color:#687486;font-size:10px}
+@media(max-width:520px){.grid{grid-template-columns:1fr 1fr}.metrics{grid-template-columns:1fr 1fr 1fr}.bigdigit{font-size:62px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">MATCH <span>DETECTOR</span></div>
+  <div class="sub">Deriv synthetic indices • live tick analysis • manual trading mode</div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <h2>1. Connection & market</h2>
+    <div class="grid">
+      <div>
+        <label>Volatility index</label>
+        <select id="market">
+          <option value="R_10">Volatility 10</option>
+          <option value="R_25">Volatility 25</option>
+          <option value="R_50">Volatility 50</option>
+          <option value="R_75">Volatility 75</option>
+          <option value="R_100">Volatility 100</option>
+          <option value="1HZ10V">Volatility 10 (1s)</option>
+          <option value="1HZ25V">Volatility 25 (1s)</option>
+          <option value="1HZ50V">Volatility 50 (1s)</option>
+          <option value="1HZ75V">Volatility 75 (1s)</option>
+          <option value="1HZ100V">Volatility 100 (1s)</option>
+        </select>
+      </div>
+      <div>
+        <label>App ID (public tick connection)</label>
+        <input id="appid" value="1089" inputmode="numeric">
+      </div>
+    </div>
+    <div class="buttons">
+      <button id="connect">Connect & Watch</button>
+      <button class="secondary" id="disconnect">Stop</button>
+    </div>
+    <div class="status" style="margin-top:11px"><span id="dot" class="dot"></span><span id="status">Disconnected</span></div>
+  </section>
+
+  <section class="card hero">
+    <div class="candidate">LATEST LAST DIGIT</div>
+    <div id="latest" class="bigdigit">—</div>
+    <span id="candidate" class="badge">Waiting for ticks</span>
+    <div id="ticks" class="ticks"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Match detection rules</h2>
+    <div class="grid">
+      <div>
+        <label>Analysis window (ticks)</label>
+        <input id="window" type="number" min="5" max="200" value="20">
+      </div>
+      <div>
+        <label>Minimum appearances</label>
+        <input id="minCount" type="number" min="2" max="20" value="3">
+      </div>
+      <div>
+        <label>Maximum gap since last appearance</label>
+        <input id="maxGap" type="number" min="1" max="50" value="6">
+      </div>
+      <div>
+        <label>Cooldown after signal (ticks)</label>
+        <input id="cooldown" type="number" min="0" max="50" value="5">
+      </div>
+    </div>
+    <p class="small">A signal is generated when one digit has at least the required appearances inside the rolling window, is the current leading digit, and its latest appearance is within the configured gap. This is a pattern detector, not a guarantee of the next tick.</p>
+  </section>
+
+  <section class="card">
+    <h2>3. Current signal</h2>
+    <div id="signal" class="signal">
+      <div class="signaltitle">NO SIGNAL</div>
+      <div class="signalmeta">Waiting for enough live ticks to analyse.</div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><b id="score">0</b><span>pattern score</span></div>
+      <div class="metric"><b id="count">0</b><span>candidate count</span></div>
+      <div class="metric"><b id="gap">—</b><span>current gap</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>4. Digit frequency</h2>
+    <div id="bars" class="bars"></div>
+  </section>
+
+  <section class="card">
+    <h2>Activity log</h2>
+    <div id="log" class="log">Ready. Tap Connect & Watch to begin receiving public tick data.</div>
+  </section>
+
+  <section class="card">
+    <h2>Manual trading</h2>
+    <div class="small">This version deliberately does <b>not</b> place trades or handle your Deriv password/API token. Use the detector as an alert tool and place any trade yourself after reviewing the signal.</div>
+  </section>
+  <footer>Match Detector • for analysis/education • no outcome is guaranteed</footer>
+</main>
+
+<script>
+(() => {
+  let ws = null, ticks = [], lastSignalTick = -9999, tickNo = 0, running = false;
+
+  const $ = id => document.getElementById(id);
+  const log = msg => {
+    const line = new Date().toLocaleTimeString() + "  " + msg;
+    $("log").textContent = line + "\n" + $("log").textContent;
+    if ($("log").textContent.length > 7000) $("log").textContent = $("log").textContent.slice(0,7000);
+  };
+
+  function setStatus(on, msg){
+    $("dot").className = "dot" + (on ? " on" : "");
+    $("status").textContent = msg;
+  }
+
+  function digitFromQuote(q){
+    const s = String(q);
+    const parts = s.split(".");
+    return Number((parts[1] || "").slice(-1) || (parts[0].slice(-1)));
+  }
+
+  function analyse(){
+    const win = Math.max(5, Number($("window").value)||20);
+    const minCount = Math.max(2, Number($("minCount").value)||3);
+    const maxGap = Math.max(1, Number($("maxGap").value)||6);
+    const cooldown = Math.max(0, Number($("cooldown").value)||5);
+    const data = ticks.slice(-win);
+    const counts = Array(10).fill(0);
+    data.forEach(d => counts[d]++);
+
+    const max = Math.max(...counts);
+    let candidates = [];
+    for(let d=0; d<10; d++){
+      if(counts[d] === max && counts[d] >= minCount){
+        let gap = 999;
+        for(let i=data.length-1, g=0;i>=0;i--,g++){ if(data[i]===d){gap=g;break;} }
+        candidates.push({d,count:counts[d],gap});
+      }
+    }
+
+    let best = candidates.sort((a,b)=>a.gap-b.gap)[0] || null;
+    $("count").textContent = best ? best.count : "0";
+    $("gap").textContent = best ? best.gap : "—";
+    let score = best ? Math.min(100, Math.round((best.count/win)*100 + Math.max(0, 30-best.gap*5))) : 0;
+    $("score").textContent = score;
+
+    if(best && best.gap <= maxGap && (tickNo - lastSignalTick) > cooldown){
+      lastSignalTick = tickNo;
+      $("signal").className = "signal good";
+      $("signal").innerHTML = `<div class="signaltitle">🟢 MATCH SETUP DETECTED — DIGIT ${best.d}</div>
+        <div class="signalmeta">Market: ${$("market").selectedOptions[0].text} • ${best.count}/${data.length} ticks • gap ${best.gap} • score ${score}/100</div>`;
+      $("candidate").textContent = "Candidate digit: " + best.d;
+      beep();
+      log("SIGNAL: candidate digit " + best.d + " | count " + best.count + " | gap " + best.gap + " | score " + score);
+    } else {
+      $("signal").className = "signal";
+      $("signal").innerHTML = `<div class="signaltitle">NO NEW SIGNAL</div>
+        <div class="signalmeta">${best ? "Current leader: digit "+best.d+" • "+best.count+" appearances • gap "+best.gap : "Waiting for enough repeated-digit evidence."}</div>`;
+      $("candidate").textContent = best ? "Leading digit: " + best.d : "No candidate yet";
+    }
+
+    renderBars(counts, max);
+  }
+
+  function renderBars(counts,max){
+    $("bars").innerHTML = counts.map((n,d)=>`<div class="barwrap"><span>${n}</span><div class="bar" style="height:${max?Math.max(2,(n/max)*105):2}px"></div><span>${d}</span></div>`).join("");
+  }
+
+  function renderTicks(){
+    const recent = ticks.slice(-30);
+    $("ticks").innerHTML = recent.map((d,i)=>`<div class="tick ${i===recent.length-1?'latest':''}">${d}</div>`).join("");
+    $("latest").textContent = recent.length ? recent[recent.length-1] : "—";
+  }
+
+  function beep(){
+    try{
+      const C = window.AudioContext || window.webkitAudioContext;
+      if(!C) return;
+      const c = new C(), o=c.createOscillator(), g=c.createGain();
+      o.frequency.value=880; g.gain.value=.05; o.connect(g); g.connect(c.destination);
+      o.start(); o.stop(c.currentTime+.18);
+    }catch(e){}
+  }
+
+  function connect(){
+    disconnect();
+    const appid = String($("appid").value||"1089").trim();
+    const market = $("market").value;
+    if(!/^[0-9]+$/.test(appid)){ log("Invalid App ID."); return; }
+
+    const endpoints = [
+      "wss://ws.derivws.com/websockets/v3?app_id="+encodeURIComponent(appid),
+      "wss://ws.binaryws.com/websockets/v3?app_id="+encodeURIComponent(appid)
+    ];
+    let endpointIndex = 0;
+    let settled = false;
+
+    setStatus(false,"Connecting…");
+    log("Connecting to Deriv tick stream for " + market + " …");
+
+    const openEndpoint = () => {
+      if(endpointIndex >= endpoints.length){
+        setStatus(false,"Could not connect");
+        log("Both Deriv WebSocket endpoints failed. Check internet access, then try Connect again.");
+        return;
+      }
+
+      const url = endpoints[endpointIndex];
+      const endpointName = endpointIndex === 0 ? "primary" : "fallback";
+      log("Trying " + endpointName + " tick server…");
+
+      let socket;
+      try {
+        socket = new WebSocket(url);
+      } catch(e) {
+        log("Could not create WebSocket: " + e.message);
+        endpointIndex++;
+        openEndpoint();
+        return;
+      }
+      ws = socket;
+
+      const timer = setTimeout(() => {
+        if(socket.readyState !== WebSocket.OPEN){
+          try { socket.close(); } catch(e){}
+        }
+      }, 9000);
+
+      socket.onopen = () => {
+        clearTimeout(timer);
+        if(ws !== socket) return;
+        settled = true;
+        running = true;
+        setStatus(true,"Connected • receiving live ticks");
+        log("Connected. Subscribing to " + market + "…");
+        try {
+          socket.send(JSON.stringify({ticks:market,subscribe:1}));
+        } catch(e) {
+          log("Subscription send failed: " + e.message);
+        }
+      };
+
+      socket.onmessage = ev => {
+        try{
+          const m=JSON.parse(ev.data);
+          if(m.error){
+            log("API error: "+m.error.message);
+            if(!settled){
+              try { socket.close(); } catch(e){}
+            } else {
+              setStatus(false,"API error");
+            }
+            return;
+          }
+          if(m.msg_type === "tick" && m.tick && m.tick.quote !== undefined){
+            const d=digitFromQuote(m.tick.quote);
+            if(Number.isInteger(d)){
+              ticks.push(d);
+              tickNo++;
+              const maxWindow=Math.max(200,Number($("window").value)||20);
+              if(ticks.length>maxWindow) ticks=ticks.slice(-maxWindow);
+              renderTicks();
+              analyse();
+            }
+          }
+        }catch(e){
+          log("Message parse error: "+e.message);
+        }
+      };
+
+      socket.onerror = () => {
+        if(!settled) log(endpointName + " server connection failed; trying fallback…");
+        else {
+          setStatus(false,"Connection error");
+          log("WebSocket connection error.");
+        }
+      };
+
+      socket.onclose = () => {
+        clearTimeout(timer);
+        if(ws !== socket) return;
+        ws = null;
+        running = false;
+        if(!settled){
+          endpointIndex++;
+          openEndpoint();
+        } else {
+          setStatus(false,"Disconnected");
+          log("Connection closed.");
+        }
+      };
+    };
+
+    openEndpoint();
+  }
+
+  function disconnect(){
+    if(ws){ try{ws.onclose=null; ws.close();}catch(e){} ws=null; }
+    running=false; setStatus(false,"Disconnected");
+  }
+
+  $("connect").onclick=connect;
+  $("disconnect").onclick=disconnect;
+  $("market").onchange=()=>{ if(running) connect(); };
+  ["window","minCount","maxGap","cooldown"].forEach(id=>$(id).addEventListener("change",analyse));
+  renderBars(Array(10).fill(0),0);
+})();
+</script>
+</body>
+</html>

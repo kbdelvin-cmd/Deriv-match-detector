@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deriv Match Scanner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header>
+    <h1>📡 Deriv Match Scanner</h1>
+    <div id="connection" class="pill off">OFFLINE</div>
+  </header>
+
+  <main>
+
+    <section class="card">
+      <label>Deriv App ID</label>
+      <input id="appId" type="text" placeholder="Enter App ID">
+
+      <label>Market</label>
+      <select id="symbol">
+        <option value="R_10">Volatility 10</option>
+        <option value="R_25">Volatility 25</option>
+        <option value="R_50">Volatility 50</option>
+        <option value="R_75">Volatility 75</option>
+        <option value="R_100">Volatility 100</option>
+      </select>
+
+      <label>Tick window</label>
+      <select id="window">
+        <option value="50">50 ticks</option>
+        <option value="100" selected>100 ticks</option>
+        <option value="200">200 ticks</option>
+      </select>
+
+      <label>Maximum signals</label>
+      <select id="limit">
+        <option value="3" selected>3 signals</option>
+        <option value="5">5 signals</option>
+      </select>
+
+      <button id="scanBtn">🚀 START SCANNER</button>
+    </section>
+
+    <section class="card">
+      <div class="status">
+        <span>Scanner status</span>
+        <strong id="scannerState">STOPPED</strong>
+      </div>
+
+      <p id="statusText">Enter your App ID and start the scanner.</p>
+    </section>
+
+    <section id="signalCard" class="signal hidden">
+      <h2 id="signalTitle">MATCH</h2>
+
+      <div class="confidence">
+        <span>Scanner score</span>
+        <strong id="confidence">0%</strong>
+      </div>
+
+      <p id="reason"></p>
+
+      <button id="dismissBtn">Dismiss</button>
+    </section>
+
+    <section class="card">
+      <h2>Recent digits</h2>
+      <div id="digits" class="digits"></div>
+    </section>
+
+    <section class="card">
+      <h2>Digit frequency</h2>
+      <div id="bars"></div>
+    </section>
+
+    <section class="card">
+      <div class="historyHead">
+        <h2>Signals</h2>
+        <span id="signalCount">0/3</span>
+      </div>
+
+      <div id="history">
+        <p>No signals yet.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>For analysis and backtesting only. Always verify a setup before trading.</p>
+  </footer>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

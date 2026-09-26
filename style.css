@@ -1,0 +1,117 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0b1020;
+  color: white;
+  padding: 15px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.card {
+  background: #151d33;
+  border: 1px solid #303b58;
+  border-radius: 15px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+select,
+button {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+select {
+  background: #222c46;
+  color: white;
+}
+
+button {
+  background: #16a34a;
+  color: white;
+  font-weight: bold;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.status {
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+  background: #222c46;
+  margin-bottom: 15px;
+}
+
+.signal {
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+  background: #222c46;
+}
+
+.signal strong {
+  font-size: 20px;
+}
+
+#bars {
+  display: flex;
+  align-items: end;
+  gap: 5px;
+  height: 120px;
+  margin-top: 15px;
+}
+
+.bar {
+  flex: 1;
+  background: #4f7cff;
+  min-height: 5px;
+  border-radius: 4px 4px 0 0;
+}
+
+.historyHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#history {
+  margin-top: 12px;
+}
+
+#history p {
+  padding: 10px;
+  border-bottom: 1px solid #303b58;
+}
+
+footer {
+  text-align: center;
+  opacity: 0.6;
+  font-size: 12px;
+  margin-top: 20px;
+  }
